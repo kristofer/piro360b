@@ -17,7 +17,7 @@ class Application:
         app_instance = Piro360rest()
         db_path = self.env_vars.get("DBPATH")
         session = start_sqlite_db(db_path)
-        app_instance.run_app()
+        app_instance.run_app(session)
 
 if __name__ == "__main__":
     env_keys = ["DBPATH", "ENV_VAR2"]

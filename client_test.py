@@ -13,14 +13,14 @@ def test_read_root():
     print("Test", response.json())
 
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the SimpleApp REST server"}
+    assert response.json() == {"message": "Welcome to the Piro360 REST server"}
 
 
 def test_read_root_fail():
     client = requests.Session()
     response = client.get("http://localhost:8000/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the REST server"}
+    assert response.json() == {"message": "Welcome --- server"}
 
 def test_read_item():
     client = requests.Session()

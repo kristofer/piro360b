@@ -2,13 +2,14 @@ from fastapi import FastAPI
 import uvicorn
 
 class Piro360rest:
-    def __init__(self):
+    def __init__(self, session):
         self.app = FastAPI()
+        self.session = session
 
     def start(self):
         @self.app.get("/")
         def read_root():
-            return {"message": "Welcome to the SimpleApp REST server"}
+            return {"message": "Welcome to the Piro360 REST server"}
 
         @self.app.get("/items/{item_id}")
         def read_item(item_id: int, q: str = None):
