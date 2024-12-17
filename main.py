@@ -20,8 +20,8 @@ class Application:
         app_instance.run_app(session)
 
 if __name__ == "__main__":
-    env_keys = ["DBPATH", "ENV_VAR2"]
-    app = Application(env_keys)
-    app.start()
-
+    # env_keys = ["DBPATH", "ENV_VAR2"]
+    # app = Application(env_keys)
+    # app.start()
+    print("Main is not yet working... run rest.py instead")
 # sweet.
