@@ -1,97 +1,104 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Table, Date
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from typing import List, Optional
+from sqlmodel import Field, Relationship, SQLModel, create_engine, Session, select
 
-Base = declarative_base()
+class PiroTagLink(SQLModel, table=True):
+    tag_id: Optional[int] = Field(default=None, foreign_key="tag.id", primary_key=True)
+    piro_id: Optional[int] = Field(default=None, foreign_key="piro.id", primary_key=True)
 
-# Association table for many-to-many relationship between Tag and Piro
-tag_piro_association = Table('tag_piro', Base.metadata,
-    Column('tag_id', Integer, ForeignKey('tag.id')),
-    Column('piro_id', Integer, ForeignKey('piro.id'))
-)
+class PiroBase(SQLModel):
+    title: str
+    description: Optional[str] = None
+    s3urltovideo: Optional[str] = None
+    imagename: Optional[str] = None
+    location: Optional[str] = None
+    created: Optional[str] = None
+    owner_id: int
 
-class Piro(Base):
-    __tablename__ = 'piro'
-    
-    id = Column(Integer, primary_key=True)
-    title = Column(String, nullable=False)
-    description = Column(String)
-    s3urltovideo = Column(String)
-    imagename = Column(String)
-    location = Column(String)
-    created = Column(String)
-    owner_id = Column(Integer, ForeignKey('user.id'))
-    
-    owner = relationship("User", back_populates="piros")
-    tags = relationship("Tag", secondary=tag_piro_association, back_populates="piros")
+class Piro(PiroBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    owner_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    tags: List["Tag"] = Relationship(back_populates="piros", link_model=PiroTagLink)
+    owner: "User" = Relationship(back_populates="piros")
 
-class Tag(Base):
-    __tablename__ = 'tag'
-    
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-    description = Column(String)
-    
-    owner_id = Column(Integer, ForeignKey('user.id'))
-    owner = relationship("User", back_populates="tags")
-    piros = relationship("Piro", secondary=tag_piro_association, back_populates="tags")
+class TagBase(SQLModel):
+    title: str
+    description: Optional[str] = None
+    owner_id: int
 
-class User(Base):
-    __tablename__ = 'user'
-    
-    id = Column(Integer, primary_key=True)
-    email = Column(String)
-    firstname = Column(String)
-    lastname = Column(String)
-    
-    tags = relationship("Tag", back_populates="owner")
-    piros = relationship("Piro", back_populates="owner")
+class Tag(TagBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    owner_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    piros: List[Piro] = Relationship(back_populates="tags", link_model=PiroTagLink)
+    owner: "User" = Relationship(back_populates="tags")
 
-# p: create a function which starts using a sqlite3 database for this schema
+class UserBase(SQLModel):
+    email: str
+    firstname: Optional[str] = None
+    lastname: Optional[str] = None
 
-def start_sqlite_db(db_path):
-    engine = create_engine(f'sqlite:///{db_path}')
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    return Session()
+class User(UserBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    tags: List[Tag] = Relationship(back_populates="owner")
+    piros: List[Piro] = Relationship(back_populates="owner")
 
-    # Example usage
-    # session = start_sqlite_db('/path/to/your/database.db')
+DATABASE_URL = "sqlite:///./test.db"
+engine = create_engine(DATABASE_URL)
 
-# generate some User data for this database
-def create_user(session):
-    user = User(email="eat@joes.com", firstname="Joe", lastname="Smith")
-    session.add(user)
-    session.commit()
-    return user
+def create_db_and_tables(engine):
+    SQLModel.metadata.create_all(engine)
 
-# generate some Tag data for this database
-def create_tag(session):
-    tag = Tag(title="Tag1", description="This is tag 1")
-    session.add(tag)
-    session.commit()
-    return tag
+def get_db():
+    with Session(engine) as session:
+        yield session
 
-# generate some Piro data for this database
-def create_piro(session):
-    piro = Piro(title="Piro1", description="This is piro 1", s3urltovideo="http://s3.com/video",
-                imagename="image.jpg", location="New York", created="2021-01-01")
-    session.add(piro)
-    session.commit()
-    return piro
+# Function to populate the database with test data
+def populate_db(engine):
+    with Session(engine) as session:
+        # # Create test users
+        # user1 = User(email="user1@example.com", firstname="User", lastname="One")
+        # user2 = User(email="user2@example.com", firstname="User", lastname="Two")
+        # session.add(user1)
+        # session.add(user2)
+        # session.commit()
+        # session.refresh(user1)
+        # session.refresh(user2)
 
-# if you run this script, it will create a database and populate it with some data
+        # # Create test tags
+        # tag1 = Tag(title="Tag1", description="Description for Tag1", owner_id=user1.id)
+        # tag2 = Tag(title="Tag2", description="Description for Tag2", owner_id=user2.id)
+        # session.add(tag1)
+        # session.add(tag2)
+        # session.commit()
+        # session.refresh(tag1)
+        # session.refresh(tag2)
+
+        # Create test piros
+        statement = select(User).where(User.id == 1)
+        results = session.exec(statement)
+        user1 = results.one()
+        statement = select(User).where(User.id == 2)
+        results = session.exec(statement)
+        user2 = results.one()
+        statement = select(Tag).where(Tag.id == 1)
+        results = session.exec(statement)
+        tag1 = results.one()
+        statement = select(Tag).where(Tag.id == 2)
+        results = session.exec(statement)
+        tag2 = results.one()
+        piro1 = Piro(title="Piro1", description="Description for Piro1", s3urltovideo="http://s3.com/video1", imagename="image1.jpg", location="Location1", created="2021-01-01", owner_id=user1.id, tags=[tag1])
+        piro2 = Piro(title="Piro2", description="Description for Piro2", s3urltovideo="http://s3.com/video2", imagename="image2.jpg", location="Location2", created="2021-02-01", owner_id=user2.id, tags=[tag2])
+        session.add(piro1)
+        session.add(piro2)
+        session.commit()
+        session.refresh(piro1)
+        session.refresh(piro2)
+
+        # Associate piros with tags
+        # tag1.piros.append(piro1)
+        # tag2.piros.append(piro2)
+        # session.commit()
+
 if __name__ == "__main__":
-    session = start_sqlite_db('piro360.db')
-    user = create_user(session)
-    tag = create_tag(session)
-    piro = create_piro(session)
-    print("User:", user)
-    print("Tag:", tag)
-    print("Piro:", piro)
-    print("User Tags:", user.tags)
-    print("User Piros:", user.piros)
-    print("Tag Piros:", tag.piros)
-    print("Piro Tags:", piro.tags)
+# Database setup
+    create_db_and_tables(engine)
+    populate_db(engine)

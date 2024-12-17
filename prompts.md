@@ -25,3 +25,12 @@ I had to edit, heavily, the offering, because it used `virtualenv` and not `py3 
 # build a test client
 generate a test client that can be used against the code in main.py and rest.py
 ```
+
+And I saw this a number of times:
+```
+/tests
+create some test cases for exercising the rest API endpoints for PIROs. see rest.py for the endpoints
+
+ERROR (intermediate value)(intermediate value)(intermediate value)?.map is not a function
+```
+Not a terribly helpful error message

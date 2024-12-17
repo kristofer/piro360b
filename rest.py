@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
-from sqlalchemy.orm import Session
+from sqlmodel import Session, select
 import uvicorn
-from models import Base, Piro, Tag, User, create_engine, sessionmaker
+from models import Piro, Tag, User, create_engine, SQLModel
 
 class Piro360rest:
     def __init__(self, session):
@@ -13,10 +13,6 @@ class Piro360rest:
         def read_root():
             return {"message": "Welcome to the Piro360 REST server"}
 
-##
-##
-## PIRO
-##
         @self.app.post("/piros/", response_model=Piro)
         def create_piro(piro: Piro, db: Session = Depends(self.get_db)):
             db.add(piro)
@@ -26,40 +22,40 @@ class Piro360rest:
 
         @self.app.get("/piros/", response_model=list[Piro])
         def read_piros(skip: int = 0, limit: int = 10, db: Session = Depends(self.get_db)):
-            piros = db.query(Piro).offset(skip).limit(limit).all()
+            statement = select(Piro).offset(skip).limit(limit)
+            results = db.exec(statement)
+            piros = results.all()
             return piros
 
         @self.app.get("/piros/{piro_id}", response_model=Piro)
         def read_piro(piro_id: int, db: Session = Depends(self.get_db)):
-            piro = db.query(Piro).filter(Piro.id == piro_id).first()
-            if piro is None:
+            piro = db.get(Piro, piro_id)
+            if not piro:
                 raise HTTPException(status_code=404, detail="Piro not found")
             return piro
 
         @self.app.put("/piros/{piro_id}", response_model=Piro)
         def update_piro(piro_id: int, piro: Piro, db: Session = Depends(self.get_db)):
-            db_piro = db.query(Piro).filter(Piro.id == piro_id).first()
-            if db_piro is None:
+            db_piro = db.get(Piro, piro_id)
+            if not db_piro:
                 raise HTTPException(status_code=404, detail="Piro not found")
-            for key, value in piro.dict().items():
+            piro_data = piro.dict(exclude_unset=True)
+            for key, value in piro_data.items():
                 setattr(db_piro, key, value)
+            db.add(db_piro)
             db.commit()
             db.refresh(db_piro)
             return db_piro
 
         @self.app.delete("/piros/{piro_id}")
         def delete_piro(piro_id: int, db: Session = Depends(self.get_db)):
-            db_piro = db.query(Piro).filter(Piro.id == piro_id).first()
-            if db_piro is None:
+            piro = db.get(Piro, piro_id)
+            if not piro:
                 raise HTTPException(status_code=404, detail="Piro not found")
-            db.delete(db_piro)
+            db.delete(piro)
             db.commit()
             return {"detail": "Piro deleted"}
 
-##
-##
-## TAG
-##
         @self.app.post("/tags/", response_model=Tag)
         def create_tag(tag: Tag, db: Session = Depends(self.get_db)):
             db.add(tag)
@@ -69,40 +65,40 @@ class Piro360rest:
 
         @self.app.get("/tags/", response_model=list[Tag])
         def read_tags(skip: int = 0, limit: int = 10, db: Session = Depends(self.get_db)):
-            tags = db.query(Tag).offset(skip).limit(limit).all()
+            statement = select(Tag).offset(skip).limit(limit)
+            results = db.exec(statement)
+            tags = results.all()
             return tags
 
         @self.app.get("/tags/{tag_id}", response_model=Tag)
         def read_tag(tag_id: int, db: Session = Depends(self.get_db)):
-            tag = db.query(Tag).filter(Tag.id == tag_id).first()
-            if tag is None:
+            tag = db.get(Tag, tag_id)
+            if not tag:
                 raise HTTPException(status_code=404, detail="Tag not found")
             return tag
 
         @self.app.put("/tags/{tag_id}", response_model=Tag)
         def update_tag(tag_id: int, tag: Tag, db: Session = Depends(self.get_db)):
-            db_tag = db.query(Tag).filter(Tag.id == tag_id).first()
-            if db_tag is None:
+            db_tag = db.get(Tag, tag_id)
+            if not db_tag:
                 raise HTTPException(status_code=404, detail="Tag not found")
-            for key, value in tag.dict().items():
+            tag_data = tag.dict(exclude_unset=True)
+            for key, value in tag_data.items():
                 setattr(db_tag, key, value)
+            db.add(db_tag)
             db.commit()
             db.refresh(db_tag)
             return db_tag
 
         @self.app.delete("/tags/{tag_id}")
         def delete_tag(tag_id: int, db: Session = Depends(self.get_db)):
-            db_tag = db.query(Tag).filter(Tag.id == tag_id).first()
-            if db_tag is None:
+            tag = db.get(Tag, tag_id)
+            if not tag:
                 raise HTTPException(status_code=404, detail="Tag not found")
-            db.delete(db_tag)
+            db.delete(tag)
             db.commit()
             return {"detail": "Tag deleted"}
 
-##
-##
-## USER
-##
         @self.app.post("/users/", response_model=User)
         def create_user(user: User, db: Session = Depends(self.get_db)):
             db.add(user)
@@ -112,58 +108,57 @@ class Piro360rest:
 
         @self.app.get("/users/", response_model=list[User])
         def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(self.get_db)):
-            users = db.query(User).offset(skip).limit(limit).all()
+            statement = select(User).offset(skip).limit(limit)
+            results = db.exec(statement)
+            users = results.all()
+            print('users', len(users))
             return users
 
         @self.app.get("/users/{user_id}", response_model=User)
         def read_user(user_id: int, db: Session = Depends(self.get_db)):
-            user = db.query(User).filter(User.id == user_id).first()
-            if user is None:
+            user = db.get(User, user_id)
+            if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return user
 
         @self.app.put("/users/{user_id}", response_model=User)
         def update_user(user_id: int, user: User, db: Session = Depends(self.get_db)):
-            db_user = db.query(User).filter(User.id == user_id).first()
-            if db_user is None:
+            db_user = db.get(User, user_id)
+            if not db_user:
                 raise HTTPException(status_code=404, detail="User not found")
-            for key, value in user.dict().items():
+            user_data = user.dict(exclude_unset=True)
+            for key, value in user_data.items():
                 setattr(db_user, key, value)
+            db.add(db_user)
             db.commit()
             db.refresh(db_user)
             return db_user
 
         @self.app.delete("/users/{user_id}")
         def delete_user(user_id: int, db: Session = Depends(self.get_db)):
-            db_user = db.query(User).filter(User.id == user_id).first()
-            if db_user is None:
+            user = db.get(User, user_id)
+            if not user:
                 raise HTTPException(status_code=404, detail="User not found")
-            db.delete(db_user)
+            db.delete(user)
             db.commit()
             return {"detail": "User deleted"}
 
-        # end creation of app
         return self.app
 
-
     def get_db(self):
-        db = self.session()
-        try:
-            yield db
-        finally:
-            db.close()
+        db = self.session
+        # try:
+        #     yield db
+        # finally:
+        #     db.close()
+        return db
 
     def run_app(self):
         uvicorn.run(self.start(), host="0.0.0.0", port=8000)
-        
-# if __name__ == "__main__":
-#     app_instance = Piro360rest()
-#     uvicorn.run(app_instance.start(), host="0.0.0.0", port=8000)
-
 
 if __name__ == "__main__":
-    engine = create_engine('sqlite:///piro360.db')
-    Base.metadata.create_all(bind=engine)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    app_instance = Piro360rest(SessionLocal)
-    uvicorn.run(app_instance.start(), host="0.0.0.0", port=8000)
+    engine = create_engine('sqlite:///test.db')
+    SQLModel.metadata.create_all(bind=engine)
+    with Session(engine) as session:
+        app_instance = Piro360rest(session)
+        uvicorn.run(app_instance.start(), host="0.0.0.0", port=8000)

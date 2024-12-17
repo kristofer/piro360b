@@ -15,8 +15,8 @@ class Application:
 
     def start(self):
         app_instance = Piro360rest()
-        db_path = self.env_vars.get("DBPATH")
-        session = start_sqlite_db(db_path)
+        #db_path = self.env_vars.get('./test.db')
+        session = create_db_and_tables(engine)
         app_instance.run_app(session)
 
 if __name__ == "__main__":

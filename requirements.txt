@@ -5,3 +5,5 @@ sqlalchemy
 pytest
 fastapi
 uvicorn
+pydantic
+httpx
