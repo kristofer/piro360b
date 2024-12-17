@@ -1,6 +1,7 @@
 
 a copy of the Piro360 simple data model. Last 2024.
 
+```
 entity Piro {
   title String required
   description String
@@ -29,4 +30,4 @@ relationship ManyToOne {
 relationship ManyToMany {
   Tag{Piros} to Piro{Tags}
 }
-
+```
