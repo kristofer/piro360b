@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, Table, Date
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -21,7 +21,7 @@ class Piro(Base):
     s3urltovideo = Column(String)
     imagename = Column(String)
     location = Column(String)
-    created = Column(Date)
+    created = Column(String)
     owner_id = Column(Integer, ForeignKey('user.id'))
     
     owner = relationship("User", back_populates="piros")
@@ -81,3 +81,17 @@ def create_piro(session):
     session.add(piro)
     session.commit()
     return piro
+
+# if you run this script, it will create a database and populate it with some data
+if __name__ == "__main__":
+    session = start_sqlite_db('piro360.db')
+    user = create_user(session)
+    tag = create_tag(session)
+    piro = create_piro(session)
+    print("User:", user)
+    print("Tag:", tag)
+    print("Piro:", piro)
+    print("User Tags:", user.tags)
+    print("User Piros:", user.piros)
+    print("Tag Piros:", tag.piros)
+    print("Piro Tags:", piro.tags)
