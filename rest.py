@@ -17,8 +17,9 @@ class Piro360rest:
         return self.app
 
     def run_app(self):
-        uvicorn.run(app_instance.start(), host="0.0.0.0", port=8000)
+        uvicorn.run(self.start(), host="0.0.0.0", port=8000)
         
 if __name__ == "__main__":
     app_instance = Piro360rest()
     uvicorn.run(app_instance.start(), host="0.0.0.0", port=8000)
+

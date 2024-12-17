@@ -13,13 +13,13 @@ class Application:
             env_vars[key] = os.getenv(key)
         return env_vars
 
-    def main(self):
+    def start(self):
         app_instance = Piro360rest()
         app_instance.run_app()
 
 if __name__ == "__main__":
     env_keys = ["ENV_VAR1", "ENV_VAR2"]
     app = Application(env_keys)
-    app.main()
+    app.start()
 
 # sweet.

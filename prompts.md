@@ -20,3 +20,8 @@ create the documentation for a virtual env in project
 ```
 I had to edit, heavily, the offering, because it used `virtualenv` and not `py3 -m venv...`
 
+
+```
+# build a test client
+generate a test client that can be used against the code in main.py and rest.py
+```
