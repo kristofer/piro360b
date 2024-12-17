@@ -1,7 +1,7 @@
 import os
 
 from rest import Piro360rest
-
+from models import start_sqlite_db
 
 class Application:
     def __init__(self, env_keys):
@@ -15,10 +15,12 @@ class Application:
 
     def start(self):
         app_instance = Piro360rest()
+        db_path = self.env_vars.get("DBPATH")
+        session = start_sqlite_db(db_path)
         app_instance.run_app()
 
 if __name__ == "__main__":
-    env_keys = ["ENV_VAR1", "ENV_VAR2"]
+    env_keys = ["DBPATH", "ENV_VAR2"]
     app = Application(env_keys)
     app.start()
 
