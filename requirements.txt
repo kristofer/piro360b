@@ -1,0 +1,7 @@
+requests
+flask
+django
+sqlalchemy
+pytest
+fastapi
+uvicorn
