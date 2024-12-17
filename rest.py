@@ -3,6 +3,10 @@ from sqlmodel import Session, select
 import uvicorn
 from models import Piro, Tag, User, create_engine, SQLModel
 
+
+# TODO: Make this class the primary, it needs to opena connection to the database
+# and then pass that connection to the FastAPI app
+# using the session instead as a DI, isn't the right thing.
 class Piro360rest:
     def __init__(self, session):
         self.app = FastAPI()
