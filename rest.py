@@ -1,5 +1,7 @@
+import os
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from sqlmodel import Session, select
 import uvicorn
 from models import Piro, Tag, User, create_engine, SQLModel
@@ -53,6 +55,17 @@ class Piro360rest:
             if not piro:
                 raise HTTPException(status_code=404, detail="Piro not found")
             return piro
+
+        @self.app.get("/api/piros/{piro_id}/image")
+        def read_piro_image(piro_id: int, db: Session = Depends(self.get_db)):
+            piro = db.get(Piro, piro_id)
+            if not piro or not piro.imagename:
+                raise HTTPException(status_code=404, detail="Image not found")
+            image_path = os.path.join("img", piro.imagename)
+            if not os.path.exists(image_path):
+                raise HTTPException(status_code=404, detail="Image file not found")
+            return FileResponse(image_path, media_type="image/png")
+
 
         @self.app.put("/api/piros/{piro_id}", response_model=Piro)
         def update_piro(piro_id: int, piro: Piro, db: Session = Depends(self.get_db)):
@@ -162,6 +175,19 @@ class Piro360rest:
             db.delete(user)
             db.commit()
             return {"detail": "User deleted"}
+
+        # @self.app.get("/img/{imagename}",
+        #                 responses = {
+        #                     200: {
+        #                         "content": {"image/png": {}}
+        #                     }
+        #                 },
+        #                 response_class=Response)
+        # def read_img(imagename: str, db: Session = Depends(self.get_db)):
+        #     image = open(os.path.join('img', imagename)).read()
+        #     if not image:
+        #         raise HTTPException(status_code=404, detail="User not found")
+        #     return image
 
         return self.app
 
