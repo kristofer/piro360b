@@ -3,6 +3,8 @@ import os
 from rest import Piro360rest
 from models import start_sqlite_db
 
+# currently not using.
+
 class Application:
     def __init__(self, env_keys):
         self.env_vars = self.fetch_env_vars(env_keys)
