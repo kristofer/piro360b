@@ -28,3 +28,23 @@ To set up a virtual environment for this project, follow these steps:
 
 Make sure to activate the virtual environment whenever you work on this project to ensure that you're using the correct dependencies.
 
+
+Some hand tests in curl
+
+```
+kristofer@Atlantan piro360b % curl -X POST "http://localhost:8080/api/piros/" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "title": "Test Piro",
+           "description": "This is a test piro",
+           "s3urltovideo": "http://s3.com/video",
+           "imagename": "image.jpg",
+           "location": "Test Location",
+           "created": "2021-01-01",
+           "owner_id": 1
+         }'
+{"description":"This is a test piro","s3urltovideo":"http://s3.com/video","location":"Test Location","id":8,"title":"Test Piro","imagename":"image.jpg","created":"2021-01-01","owner_id":1}%
+```
+
+`curl -X GET "http://localhost:8080/api/piros/"`
+`curl -X GET "http://localhost:8080/api/piros/1"` etc
